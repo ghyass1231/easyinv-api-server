@@ -20,7 +20,7 @@ let inventoryData = [];
 let connectionLog = [];
 
 // API Key validation (optional)
-const API_KEY = process.env.API_KEY || 'your-secret-api-key-here';
+const API_KEY = process.env.API_KEY || 'dev-only-key';
 
 function validateApiKey(req, res, next) {
     const apiKey = req.headers['authorization']?.replace('Bearer ', '') || 
