@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyInv API Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #dc2626;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: bold;
+            color: #dc2626;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .controls h2 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .search-box {
+            padding: 12px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 300px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #dc2626;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-site { background: #fef3c7; color: #92400e; }
+        .badge-floor { background: #dbeafe; color: #1e40af; }
+        .badge-room { background: #d1fae5; color: #065f46; }
+        .badge-shelf { background: #e9d5ff; color: #6b21a8; }
+
+        .quantity-badge {
+            background: #dc2626;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .timestamp {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .filters {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .last-update {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .btn-group {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 EasyInv API Dashboard</h1>
+            <p>Données d'inventaire en temps réel</p>
+            <div class="status-badge" id="statusBadge">🟢 Serveur en ligne</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">Total Enregistrements</div>
+                <div class="stat-value" id="totalRecords">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-label">Total Produits</div>
+                <div class="stat-value" id="totalProducts">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏷️</div>
+                <div class="stat-label">Produits Uniques</div>
+                <div class="stat-value" id="uniqueProducts">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-label">Sites</div>
+                <div class="stat-value" id="totalSites">0</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="controls">
+                <h2>Données d'Inventaire</h2>
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="refreshData()">🔄 Actualiser</button>
+                    <a href="/api/export/csv" class="btn btn-secondary" download>📥 CSV</a>
+                    <a href="/api/export/json" class="btn btn-secondary" download>📥 JSON</a>
+                    <button class="btn btn-primary" onclick="clearAllData()">🗑️ Tout effacer</button>
+                </div>
+            </div>
+
+            <div class="last-update" id="lastUpdate" style="display: none;">
+                Dernière mise à jour: <span id="lastUpdateTime">-</span>
+            </div>
+
+            <div class="filters">
+                <select class="filter-select" id="filterSite" onchange="applyFilters()">
+                    <option value="">Tous les sites</option>
+                </select>
+                <select class="filter-select" id="filterFloor" onchange="applyFilters()">
+                    <option value="">Tous les étages</option>
+                </select>
+                <select class="filter-select" id="filterRoom" onchange="applyFilters()">
+                    <option value="">Toutes les salles</option>
+                </select>
+                <select class="filter-select" id="filterShelf" onchange="applyFilters()">
+                    <option value="">Toutes les étagères</option>
+                </select>
+                <input type="text" class="search-box" id="searchProduct" placeholder="🔍 Rechercher un produit..." oninput="applyFilters()">
+            </div>
+
+            <div class="table-container">
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>Horodatage</th>
+                            <th>Site</th>
+                            <th>Étage</th>
+                            <th>Salle</th>
+                            <th>Étagère</th>
+                            <th>Code-barres Produit</th>
+                            <th>Quantité</th>
+                            <th>Reçu le</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody">
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📭</div>
+                                    <h3>Aucune donnée pour le moment</h3>
+                                    <p>Les données d'inventaire apparaîtront ici dès réception</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+        let stats = {};
+
+        // Refresh data from API
+        async function refreshData() {
+            try {
+                // Get statistics
+                const statsResponse = await fetch('/api/stats');
+                stats = await statsResponse.json();
+
+                // Get inventory data
+                const dataResponse = await fetch('/api/inventory');
+                const result = await dataResponse.json();
+                allData = result.data || [];
+
+                updateStats();
+                updateFilters();
+                applyFilters();
+                
+                document.getElementById('statusBadge').textContent = '🟢 Serveur en ligne';
+                document.getElementById('statusBadge').style.background = '#10b981';
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('statusBadge').textContent = '🔴 Erreur connexion';
+                document.getElementById('statusBadge').style.background = '#dc2626';
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalRecords').textContent = stats.totalRecords || 0;
+            document.getElementById('totalProducts').textContent = stats.totalProducts || 0;
+            document.getElementById('uniqueProducts').textContent = stats.uniqueProducts || 0;
+            document.getElementById('totalSites').textContent = (stats.sites || []).length;
+
+            if (stats.lastUpdate) {
+                document.getElementById('lastUpdate').style.display = 'block';
+                document.getElementById('lastUpdateTime').textContent = new Date(stats.lastUpdate).toLocaleString('fr-FR');
+            }
+        }
+
+        // Update filter dropdowns
+        function updateFilters() {
+            const siteFilter = document.getElementById('filterSite');
+            const floorFilter = document.getElementById('filterFloor');
+            const roomFilter = document.getElementById('filterRoom');
+            const shelfFilter = document.getElementById('filterShelf');
+
+            // Populate sites
+            siteFilter.innerHTML = '<option value="">Tous les sites</option>';
+            (stats.sites || []).forEach(site => {
+                if (site && site !== 'NULL') {
+                    siteFilter.innerHTML += `<option value="${site}">${site}</option>`;
+                }
+            });
+
+            // Populate floors
+            floorFilter.innerHTML = '<option value="">Tous les étages</option>';
+            (stats.floors || []).forEach(floor => {
+                if (floor && floor !== 'NULL') {
+                    floorFilter.innerHTML += `<option value="${floor}">${floor}</option>`;
+                }
+            });
+
+            // Populate rooms
+            roomFilter.innerHTML = '<option value="">Toutes les salles</option>';
+            (stats.rooms || []).forEach(room => {
+                if (room && room !== 'NULL') {
+                    roomFilter.innerHTML += `<option value="${room}">${room}</option>`;
+                }
+            });
+
+            // Populate shelves
+            shelfFilter.innerHTML = '<option value="">Toutes les étagères</option>';
+            (stats.shelves || []).forEach(shelf => {
+                if (shelf && shelf !== 'NULL') {
+                    shelfFilter.innerHTML += `<option value="${shelf}">${shelf}</option>`;
+                }
+            });
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const siteFilter = document.getElementById('filterSite').value;
+            const floorFilter = document.getElementById('filterFloor').value;
+            const roomFilter = document.getElementById('filterRoom').value;
+            const shelfFilter = document.getElementById('filterShelf').value;
+            const searchProduct = document.getElementById('searchProduct').value.toLowerCase();
+
+            let filtered = allData.filter(record => {
+                if (siteFilter && record.site !== siteFilter) return false;
+                if (floorFilter && record.floor !== floorFilter) return false;
+                if (roomFilter && record.room !== roomFilter) return false;
+                if (shelfFilter && record.shelf !== shelfFilter) return false;
+                if (searchProduct && !record.productBarcode.toLowerCase().includes(searchProduct)) return false;
+                return true;
+            });
+
+            renderTable(filtered);
+        }
+
+        // Render table
+        function renderTable(data) {
+            const tbody = document.getElementById('inventoryBody');
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📭</div>
+                                <h3>Aucune donnée trouvée</h3>
+                                <p>Aucun enregistrement ne correspond aux filtres</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = data.map(record => `
+                <tr>
+                    <td class="timestamp">${new Date(record.timestamp).toLocaleString('fr-FR')}</td>
+                    <td><span class="badge badge-site">${record.site || 'NULL'}</span></td>
+                    <td><span class="badge badge-floor">${record.floor || 'NULL'}</span></td>
+                    <td><span class="badge badge-room">${record.room || 'NULL'}</span></td>
+                    <td><span class="badge badge-shelf">${record.shelf || 'NULL'}</span></td>
+                    <td><strong>${record.productBarcode}</strong></td>
+                    <td><span class="quantity-badge">${record.quantity}</span></td>
+                    <td class="timestamp">${new Date(record.receivedAt).toLocaleString('fr-FR')}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Clear all data
+        async function clearAllData() {
+            if (!confirm('Êtes-vous sûr de vouloir effacer toutes les données ?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/inventory', {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                alert(result.message);
+                refreshData();
+            } catch (error) {
+                console.error('Error clearing data:', error);
+                alert('Erreur lors de la suppression des données');
+            }
+        }
+
+        // Auto-refresh every 5 seconds
+        setInterval(refreshData, 5000);
+
+        // Initial load
+        refreshData();
+    </script>
+</body>
+</html>
